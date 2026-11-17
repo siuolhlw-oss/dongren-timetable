@@ -32,9 +32,6 @@ assert.deepEqual(createEngine(data).findCandidates('A',data.teachers[0].lessons[
 data=fixture();data.teachers[1].scheduleStatus='partial';
 assert.equal(createEngine(data).findCandidates('A',data.teachers[0].lessons[0]).candidates.length,0,'A teacher with an incomplete timetable is never offered as the other participant');
 const actual=JSON.parse(vm.runInNewContext(fs.readFileSync(__dirname+'/timetable-data.js','utf8')+'\nJSON.stringify(timetableData)'));
-const partial=actual.teachers.find(t=>t.name==='廖美如');
-assert.equal(partial.scheduleStatus,'partial');
-assert.equal(createEngine(actual).findCandidates(partial.name,partial.lessons[0]).status,'incomplete-data');
 const engine=createEngine(actual);let count=0,review=0;
 for(const teacher of actual.teachers)for(const lesson of teacher.lessons){
  const result=engine.findCandidates(teacher.name,lesson);
@@ -49,7 +46,23 @@ for(const teacher of actual.teachers)for(const lesson of teacher.lessons){
   assert.equal(candidate.period===8,lesson.period===8,'Actual-data candidates cannot cross the period-8 boundary');count++;
  }
 }
-const huang=actual.teachers.find(t=>t.name==='黃隆偉');
-assert.deepEqual(huang.lessons.map(l=>[l.day,l.period,l.subject]).sort(),[
- [1,1,'數學'],[1,8,'數輔'],[2,4,'數學'],[3,6,'數學'],[4,7,'資訊科技'],[5,3,'數學']].sort(),'Extracted timetable matches visually reviewed source page');
-console.log(JSON.stringify({fixtureChecks:11,actualCandidatesChecked:count,excludedSourceLessons:review,partialSchedule:'blocked in both directions',sourcePageSpotCheck:'passed'}));
+const liao=actual.teachers.find(t=>t.name==='廖翎吾');
+assert.deepEqual(liao.lessons.filter(l=>l.day===1).map(l=>[l.period,l.subject,l.classIds[0]]),[[3,'自然','205'],[7,'天文地質','301'],[8,'自然','302']],'Teacher PDF page 1 visual check');
+for(const t of actual.teachers)for(const l of t.lessons){
+ if(actual.classes.find(c=>c.id===l.classIds[0])?.swapPolicy==='review')assert.equal(engine.findCandidates(t.name,l).status,'needs-review');
+}
+assert.equal(actual.teachers.length,47);assert.equal(actual.classes.length,20);
+assert.equal(actual.teachers.reduce((n,t)=>n+t.lessons.length,0),733);
+const teacherAssignments=actual.teachers.flatMap(t=>t.lessons.flatMap(l=>l.classIds.map(c=>[t.name,c,l.day,l.period,l.subject].join('|')))).sort();
+const classAssignments=actual.classes.flatMap(c=>c.lessons.flatMap(l=>l.teachers.map(t=>[t,c.id,l.day,l.period,l.subject].join('|')))).sort();
+assert.deepEqual(teacherAssignments,classAssignments,'Co-teaching merge retains every source teaching assignment');
+let joint=0;
+for(const c of actual.classes)for(const l of c.lessons)if(l.teachers.length>1){
+ joint++;
+ for(const name of l.teachers){
+  const t=engine.teachers.get(name), lesson=t.lessons.find(x=>x.day===l.day&&x.period===l.period&&x.classIds.includes(c.id));
+  assert.equal(engine.findCandidates(name,lesson).status,'needs-review','Co-teaching source cannot be swapped independently');
+ }
+}
+assert.equal(joint,15);
+console.log(JSON.stringify({fixtureChecks:11,actualCandidatesChecked:count,excludedSourceLessons:review,sourcePageSpotCheck:'passed'}));

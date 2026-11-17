@@ -3,8 +3,8 @@ from pathlib import Path
 import json
 
 ROOT = Path(__file__).resolve().parent
-menu = json.loads((ROOT / 'menu.json').read_text())
-data = json.loads((ROOT / 'timetable.json').read_text())
+menu = json.loads((ROOT / 'menu.json').read_text(encoding='utf-8'))
+data = json.loads((ROOT / 'timetable.json').read_text(encoding='utf-8'))
 people = [p for group in ('admin', 'homerooms', 'subject', 'native')
           for row in menu[group] for p in row['items']] + menu['special']
 assert len(people) == len({p['name'] for p in people}), 'Duplicate teacher menu entry'
@@ -20,5 +20,5 @@ for source, variable, destination in (
     (data, 'timetableData', 'timetable-data.js'),
 ):
     text = json.dumps(source, ensure_ascii=False).replace('<', '\\u003c')
-    (ROOT / destination).write_text(f'const {variable} = {text};\n')
+    (ROOT / destination).write_text(f'const {variable} = {text};\n', encoding='utf-8')
 print('Browser data rebuilt successfully.')

@@ -1,5 +1,14 @@
 # 課表資料格式與規則
 
+## 東仁版本
+
+- The user confirmed on 2026-11-17 that `106.`, `206.`, `305.` are co-teaching supplements. Merge their 15 matching slots into the parent classes with all teachers; preserve literal source codes in teacher lessons' `sourceClassIds` and class `sourcePages`.
+- The user identified `707`, `807`, `906` as resource classes. Their `swapPolicy: "review"` blocks exchanges while retaining navigation. Opening resource-class swaps requires a student-group model, not just removing the flag.
+- All 47 provided teacher schedules are complete relative to the supplied PDFs; 733 teaching assignments match both PDFs and each teacher's printed total. After merging, there are 20 queryable classes.
+- `menu.classes[].grade` is 7, 8, or 9 for source codes beginning 1, 2, or 3; resource classes use 0. Grade metadata never changes the class ID.
+- Explicitly use UTF-8 for every data read/write; preserve original subjects such as `美麗的π`.
+- Period 0 (08:00–08:20 導師時間) is described in the guide, outside the 1–8 lesson grid and swap engine.
+
 - `timetable.json` stores the verified schedule extraction. Do not replace source lessons with guesses about unprovided special education lessons.
 - `menu.json` contains user-confirmed categories, menu availability and any explicit `scheduleStatus: "partial"` override.
 - `build-data.py` validates completeness consistency and regenerates browser data after source or menu changes.

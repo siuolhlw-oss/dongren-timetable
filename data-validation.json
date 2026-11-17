@@ -1,0 +1,27 @@
+{
+  "teacherPages": 47,
+  "classPages": 23,
+  "displayedClasses": 20,
+  "coTeachingLessons": 15,
+  "teacherLessons": 733,
+  "classTeachingAssignments": 733,
+  "matchedLessons": 733,
+  "mismatches": 0,
+  "teacherTotalsVerified": 47,
+  "swapReviewClasses": [
+    "707",
+    "807",
+    "906"
+  ],
+  "coTeachingConfirmedByUser": "2026-11-17",
+  "sources": [
+    {
+      "filename": "1-115-1教師課表-含兼代-ver9.1.pdf",
+      "sha256": "42ae44c49a1a682e2304ded09713ad297af317a2b84b73833e51af9b9655e0e6"
+    },
+    {
+      "filename": "2-115-1班級課表ver8.27.pdf",
+      "sha256": "01f788b8847b9877c758a5bacada2cb9956cb470a6c49ab70e9cd634d7db1282"
+    }
+  ]
+}

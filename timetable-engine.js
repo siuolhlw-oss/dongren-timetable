@@ -21,6 +21,7 @@
       const classId = lesson.classIds[0];
       const group = classes.get(classId);
       if (!group) return { status: 'needs-review', candidates: [] };
+      if (group.swapPolicy === 'review') return { status: 'needs-review', candidates: [] };
       const originals = at(group.lessons, lesson.day, lesson.period);
       if (originals.length !== 1 || originals[0].teachers.length !== 1 ||
           originals[0].teachers[0] !== name || originals[0].subject !== lesson.subject) {

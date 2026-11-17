@@ -44,7 +44,7 @@ quickNav.querySelector('[data-quick="schedule"]').onclick=returnToSchedule;
 document.querySelectorAll('[data-return-class]').forEach(button=>button.onclick=returnToClass);
 document.querySelector('#view-candidates').onclick=()=>{if(activeLesson)openLesson(activeLesson);};
 function targetLessons(){return selectedTarget.record.lessons;}
-function secondary(lesson){return selectedTarget.kind==='teacher'?lesson.classIds.map(id=>/^[789]/.test(id)?id+' 班':engine.classes.get(id)?.label||id).join('、'):lesson.teachers.join('、');}
+function secondary(lesson){return selectedTarget.kind==='teacher'?lesson.classIds.map(id=>engine.classes.get(id)?.label||id).join('、'):lesson.teachers.join('、');}
 function courseButton(lesson,index){
  const partial=selectedTarget.kind==='teacher'?selectedTarget.record.scheduleStatus==='partial':lesson.teachers.some(name=>engine.teachers.get(name)?.scheduleStatus==='partial');
  const label=escapeHTML(weekdays[lesson.day-1]+'第'+lesson.period+'節 '+lesson.subject+' '+secondary(lesson));
@@ -58,7 +58,7 @@ function renderSchedule(){
  quickNav.classList.toggle('has-class-origin',!!classReturn);document.body.classList.toggle('has-class-origin',!!classReturn);
  const summary=document.querySelector('.lesson-summary');summary.hidden=!activeLesson;
  if(activeLesson)summary.querySelector('p').textContent='已選取：'+weekdays[activeLesson.day-1]+' 第 '+activeLesson.period+' 節 · '+activeLesson.subject+' · '+secondary(activeLesson);
- const lessons=targetLessons();const title=selectedTarget.kind==='teacher'?selectedTarget.record.name+'老師':selectedTarget.record.id+' 班';
+ const lessons=targetLessons();const title=selectedTarget.kind==='teacher'?selectedTarget.record.name+'老師':selectedTarget.record.label||selectedTarget.record.id+' 班';
  const partial=selectedTarget.kind==='teacher'&&selectedTarget.record.scheduleStatus==='partial';
  document.querySelector('#schedule-status').hidden=!partial;
  document.querySelector('.schedule-notice').hidden=!partial;
@@ -102,7 +102,7 @@ function showCandidates(lesson,move=true){
  else if(lesson.teachers.length===1){name=lesson.teachers[0];source=engine.teachers.get(name)?.lessons.find(l=>l.day===lesson.day&&l.period===lesson.period&&l.classIds.includes(selectedTarget.record.id)&&l.subject===lesson.subject);}
  const result=source?engine.findCandidates(name,source):{status:'needs-review',candidates:[]};
  const panel=document.querySelector('.candidate-panel');
- const body=result.status==='incomplete-data'?'<p class="candidate-empty">這位老師的完整課表尚未提供，暫不提供調課候選。</p>':result.status==='needs-review'?'<p class="candidate-empty">本節涉及多人授課或來源差異，需人工確認，暫不提供調課候選。</p>':result.candidates.length?CandidatePreview.renderCards(result.candidates):'<p class="candidate-empty">依目前課表，找不到同班、雙方均無衝堂的直接互換選項。</p>';
+ const body=result.status==='incomplete-data'?'<p class="candidate-empty">這位老師的完整課表尚未提供，暫不提供調課候選。</p>':result.status==='needs-review'?'<p class="candidate-empty">本節為共同授課、資源班或資料需確認的課程，請先確認協同教師及學生分組，暫不提供直接調課候選。</p>':result.candidates.length?CandidatePreview.renderCards(result.candidates):'<p class="candidate-empty">依目前課表，找不到同班、雙方均無衝堂的直接互換選項。</p>';
  panel.innerHTML=`<div class="candidate-header"><h3>調課候選${result.status==='ok'?' · '+result.candidates.length:''}</h3><button type="button" aria-label="關閉調課候選">×</button></div><p class="selected-lesson">${weekdays[lesson.day-1]} 第 ${lesson.period} 節 · ${escapeHTML(lesson.subject)} · ${escapeHTML(name||lesson.teachers.join('、'))}</p>${body}<p class="candidate-disclaimer">第 1–7 節互調，第 8 節僅與第 8 節互調。候選依固定課表判斷，交換前仍須與對方確認。此處不會修改課表或送出申請。</p>`;
  document.querySelector('#view-candidates').textContent=result.status==='ok'?'查看調課候選（'+result.candidates.length+'）':'查看調課說明';
  if(source&&result.status==='ok'&&result.candidates.length)candidatePreview=CandidatePreview.mount(panel,{engine,name,source,candidates:result.candidates,periods:timetableData.periods});
